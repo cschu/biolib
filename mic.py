@@ -97,29 +97,47 @@ def compute_mic(f_x, f_y, f_xy):
                 if f_x[k[0]] > 0.0 and f_y[k[1]] > 0.0
                 and v > 0.0])
 
-def compute_profile(sequences, alphabet=['A','C','G','U'], pcount=0.0,
-                    override_alphabet=False):
+def make_alphabet(sequences):
+    """
+    *make_alphabet(sequences)*
+    
+    Computes the alphabet common to a list of sequences.
+
+    Arguments:
+       * a list of sequences
+
+    Returns:
+       * a sorted list of characters
+    """
+    return sorted(list(set([c for c in ''.join(sequences)])))
+
+    
+
+
+
+def compute_profile(sequences, alphabet=['A','C','G','U'], pcount=0.0):
     """
     *compute_profile(sequences, alphabet=['A','C','G','U'], 
-                     pcount=0.0, override_alphabet=False)*
+                     pcount=0.0)*
     
     Computes a sequence profile for a number of sequences.
     (Calls compute_frequencies.)
     Optionally, a pseudocount can be specified.
 
     Arguments:
-       * a number of sequences (of equal length)
+       * a list of sequences (of equal length)
        * a list of characters (an alphabet) (optional; default: RNA)
+         if this is None, an alphabet is constructed from the sequences,
+         otherwise, non-alphabet characters are ignored
        * a non-negative pseudocount (optional; default: 0.0)
-       * a parameter allowing to override the default alphabet
-         if unknown characters are encountered
-         Default - False: In each column, relative character 
-         frequencies are calculated according to the total column 
-         length (including unknown characters)
-
+      
     Returns:
        * list of dictionaries {xi: rel_freq(xi)}
     """
+    unlimited_alphabet = False
+    if alphabet is None:
+        alphabet = make_alphabet(sequences)
+        unlimited_alphabet = True
 
     abclen = len(alphabet)
     profile = [dict(zip(alphabet, [pcount for i in xrange(abclen)]))
@@ -127,7 +145,7 @@ def compute_profile(sequences, alphabet=['A','C','G','U'], pcount=0.0,
 
     for i in xrange(len(sequences[0])):
         col = [seq[i] for seq in sequences]
-        if override_alphabet:
+        if unlimited_alphabet:
             profile[i].update(compute_frequencies(col, pcount=pcount))
         else:
             col_f = compute_frequencies(col, pcount=pcount)
@@ -161,9 +179,13 @@ def compute_mic_pos_class(sequences, classes, alphabet=['A','C','G','U']):
     """
     
     mic = []
-    override_alphabet = alphabet is None
+    unlimited_alphabet = False
+    if alphabet is None:
+        alphabet = make_alphabet(sequences)
+        unlimited_alphabet = True
+
     profile = compute_profile(sequences, 
-                              override_alphabet=override_alphabet)
+                              alphabet=alphabet)
     f_class = compute_frequencies(classes)
     print sequences
     print classes
@@ -172,11 +194,11 @@ def compute_mic_pos_class(sequences, classes, alphabet=['A','C','G','U']):
     for i, x in enumerate(sequences[0]):
         col_x = [seq[i] for seq in sequences]
         joint_f = compute_joint_frequencies(col_x, classes)
-        if not override_alphabet:            
+        if not unlimited_alphabet:
             for k in joint_f.keys():
                 if not k[0] in alphabet:
                     del joint_f[k]
-            # print joint_f
+        print joint_f
 
         
         mic_i = compute_mic(profile[i], f_class, joint_f)
