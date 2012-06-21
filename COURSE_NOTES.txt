@@ -1,0 +1,27 @@
+This file is only of interest to you if you were forced to download 
+this bundle of scripts because you're taking part in the 2012 
+Structural Bioinformatics lecture series of the University of Potsdam.
+For your assignment you only need the following three files (you can 
+delete the other ones or make fun of the source code, whatever rocks 
+your boat.) 
+
+***FILES IMPORTANT FOR YOUR ASSIGNMENT***
+1. mca2bracket2.py -- the script you will be using to do your assign-
+ment
+2. mdg_dt.py -- the definition of the motif detection graph data 
+structure (used by 1.)
+3. minilib.py -- a dictionary of modified bases derived from the
+original {A,C,G,U}-alphabet of RNA sequences (used by 1.)
+
+***USAGE OF mca2bracket2.py***
+In order to draw a bracket-string from an MC-Annotate output file call 
+the script as follows:
+
+python mca2bracket2.py <MC-Annotate-file>
+
+The script will then output a number of status messages and will terminate
+with the output of two bracket strings 'Structure with knots' and 'Knotless'.
+The 'Structure with knots'-string contains all cis Watson-Crick base pairs 
+that are contained in the structure, whereas the 'Knotless'-string only contains 
+the true secondary structure (as deduced from the base pair information by MC-
+Annotate), i.e. a structure without any kind of crossing or touching interaction.
