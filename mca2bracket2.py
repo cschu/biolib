@@ -10,24 +10,27 @@ import mdg_dt as MDGDT
 
 ix_pattern = re.compile('([A-Za-z]|\'[0-9]\')-?[0-9]+(\.[A-Z])?')
 
+def is_ss_pair(line, edge_re, pair_re):
+    # 'antiparallel' in line -- not in online version
+    return 'cis' in line and \
+        edge_re.search(line) and \
+        pair_re.search(line)
+
 ###
 def read_data(fn):
     sequence = []
     structure = []
 
     unidentified = set([])
-
     edge_re = re.compile('W[a-z]/W[a-z]')
     pair_re = re.compile('([AG]-U)|(C-G)|(G-[CU])|(U-[AG])')
 
-    fi = open(fn)
     mode = 'ignore'
-    while True:
-        line = fi.readline()
-        if not line: break
-
+    for line in open(fn):
         line = line.strip()
-        if line.endswith('----'):
+        if not line: 
+            mode = 'ignore'
+        elif line.endswith('----'):
             if line.startswith('Residue conformations'):                
                 mode = 'sequence'
                 if len(sequence) > 0:
@@ -39,27 +42,24 @@ def read_data(fn):
                 mode = 'ignore'
                 pass
             continue
-            pass
+            pass        
 
-        
-        if mode == 'ignore': continue
+        if mode == 'ignore': 
+            continue
         elif mode == 'sequence':            
             line = line.split()
-
-
             base = line[2].strip()
             if base in biolib.BASEDICT:
                 base = biolib.BASEDICT[base]
                 sequence.append((line[0], base))
             else:
-                unidentified.add(base)
-                
+                unidentified.add(base)                
         elif mode == 'structure':
-            is_ss_pair = 'antiparallel' in line and \
-                         'cis' in line and \
-                         edge_re.search(line) and \
-                         pair_re.search(line)
-            if is_ss_pair:
+            # print line, mode
+            # print 'edge_re:', edge_re.search(line)
+            # print 'pair_re:', pair_re.search(line)
+
+            if is_ss_pair(line, edge_re, pair_re):
                 line = line.split()
                 line = line[0]
 
@@ -68,10 +68,11 @@ def read_data(fn):
                     base1 = ix_pattern.search(line)
                     line = line[base1.end():]
                     base2 = ix_pattern.search(line)
+                    # print base1.group(), base2.group()
                     structure.append([base1.group(), base2.group()])
                 except:
                     print line, 'fail'
-                    pass
+                    sys.exit(1) #pass
 
                 """
                 if len(tmp) == len(line) - 1:
@@ -92,7 +93,7 @@ def read_data(fn):
                          str(list(unidentified)))
         pass
 
-    
+    # print structure
     return sequence, structure
 
 

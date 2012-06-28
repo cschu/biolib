@@ -139,11 +139,15 @@ def compute_profile(sequences, alphabet=['A','C','G','U'], pcount=0.0):
         alphabet = make_alphabet(sequences)
         unlimited_alphabet = True
 
+    maxlen = max([len(seq) for seq in sequences])
+    # sequences = [seq + '-'*(maxlen-len(seq)) for seq in sequences]
+
     abclen = len(alphabet)
     profile = [dict(zip(alphabet, [pcount for i in xrange(abclen)]))
-               for col in sequences[0]]
-
-    for i in xrange(len(sequences[0])):
+               for i in xrange(maxlen)]
+    
+    # for i in xrange(len(sequences[0])):
+    for i in xrange(maxlen):
         col = [seq[i] for seq in sequences]
         if unlimited_alphabet:
             profile[i].update(compute_frequencies(col, pcount=pcount))
@@ -184,6 +188,9 @@ def compute_mic_pos_class(sequences, classes, alphabet=['A','C','G','U']):
         alphabet = make_alphabet(sequences)
         unlimited_alphabet = True
 
+    maxlen = max([len(seq) for seq in sequences])
+    sequences = [seq + '-'*(maxlen-len(seq)) for seq in sequences]
+
     profile = compute_profile(sequences, 
                               alphabet=alphabet)
     f_class = compute_frequencies(classes)
@@ -219,7 +226,7 @@ def main(argv):
 
     fn = argv[0]
     data = make_d.prepare_data(make_d.read_data(open(fn)))
-    N = 1000
+    N = 10000
 
     xdata = []
     classes = []
@@ -229,7 +236,30 @@ def main(argv):
     
     mic = compute_mic_pos_class(xdata, classes)
     print mic
+    cmp_mic = mic
     
+    rnd_mic = [0.0 for x in mic]
+    for i in xrange(N):
+        data = make_d.prepare_data(make_d.read_data(open(fn)),
+                                   randomize='class-shuffle')
+        xdata = []
+        classes = []
+        for x in data:
+            xdata.extend([y for y in data[x]])
+            classes.extend([x for y in data[x]])
+        mic = compute_mic_pos_class(xdata, classes)
+        rnd_mic = map(sum, zip(rnd_mic, mic))
+    rnd_mic = [x/N for x in rnd_mic]
+
+    print cmp_mic
+    print rnd_mic
+
+    fo = open('mic.csv', 'w')
+    fo.write('MIC_computed,MIC_random\n')
+    for xy in zip(cmp_mic, rnd_mic):
+        print xy
+        fo.write('%f,%f\n' % xy)
+    fo.close()
     return None
 
 if __name__ == '__main__': main(sys.argv[1:])
