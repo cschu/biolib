@@ -1,5 +1,5 @@
 This file is only of interest to you if you were forced to download 
-this bundle of scripts because you're taking part in the 2012 
+this bundle of scripts because you're taking part in the 201x (x \in {2,3}) 
 Structural Bioinformatics lecture series of the University of Potsdam.
 For your assignment you only need the following three files (you can 
 delete the other ones or make fun of the source code, whatever rocks 
