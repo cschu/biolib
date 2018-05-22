@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# coding: utf-8
 
 import sys
 
@@ -456,6 +457,19 @@ class MDG_Stem :
 
         return motifs
 
+
+def parseBracketString(s):
+    stack = []
+    structure = []
+    for i, c in enumerate(s):
+        if c == "(":
+            stack.append(i)
+        elif c == ")":
+            try:
+                structure.append((stack.pop(-1), i))
+            except:
+                raise ValueError("Stack prematurely empty")
+    return sorted(structure)
    
     
 ###        
@@ -464,10 +478,17 @@ def main(argv):
     # contacts = [(0,15), (1,14), (2,13), (3,11), (4,10), (5,9)]
     # contacts = [(0,11), (1,9), (2,8), (3,7)]
     contacts = [(0,20), (1,19), (3,9), (4,8), (11,17), (12,16)]
+    # 012345678901234567890
+    # ((.((...)).((...)).))
+
+    contacts = list(parseBracketString(sys.argv[1]))
+    print contacts
 
     """ this builds the tree """
     x = MDG_Stem()
-    x.assemble(contacts, outp=sys.stdout)
+    x.assemble(contacts, outp=DEFOUT)
+    for motif in x.find_all_motifs():
+        print(motif)
 
     # print x.find_all_motifs()
 
@@ -479,10 +500,10 @@ def main(argv):
     The minimum stemsize is 2, single base pairs should be ignored.
     
     """
-    x.walk() 
-    print
-    for y in x.preorder():
-        print y
+    # x.walk() 
+    #print
+    #for y in x.preorder():
+    #    print y
     
     return 0
 
